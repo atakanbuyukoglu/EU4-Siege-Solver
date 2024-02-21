@@ -5,7 +5,7 @@ from pathlib import Path
 
 ### Simulation Parameters ###
 simulation_count = 100000
-leader = 0
+#leader = 0
 artillery = 0
 blockade = False
 fort = 2
@@ -91,17 +91,24 @@ def progress_2_win_prob(progress):
     return 100 * round(win_prob, 4)
 progresses = range(6, 20)
 win_probs = [progress_2_win_prob(i) for i in progresses]
-win_prob_counts = [0] * len(win_probs)
-for i in range(simulation_count):
-    siege = Siege(leader=leader, artillery=artillery, blockade=blockade, fort=fort, breach=breach)
-    surrendered = False
-    while not surrendered:
-        surrendered, progress = siege.progress()
-    win_prob_counts[progress - 6] += 1
 
-plt.bar(win_probs, win_prob_counts, width=100/28)
-plt.title(str(simulation_count) + ' simulations, advantage: ' + str(siege.get_advantage()))
-plt.xlabel('Siege winning percentage')
-plt.ylabel('Siege winning count')
-save_path = Path(__file__).parent / 'Figures'
-plt.savefig(save_path / ('Sim' + str(simulation_count) + 'Adv' + str(siege.get_advantage())))
+# Cheating part for quick results
+for leader in range(14):
+
+    win_prob_counts = [0] * len(win_probs)
+    for i in range(simulation_count):
+        siege = Siege(leader=leader, artillery=artillery, blockade=blockade, fort=fort, breach=breach)
+        surrendered = False
+        while not surrendered:
+            surrendered, progress = siege.progress()
+        win_prob_counts[progress - 6] += 1
+
+    plt.figure()
+    plt.bar(win_probs, win_prob_counts, width=100/28)
+    plt.title(str(simulation_count) + ' simulations, advantage: ' + str(siege.get_advantage()))
+    plt.xlabel('Siege winning percentage')
+    plt.ylabel('Siege winning count')
+    save_path = Path(__file__).parent / 'Figures'
+    plt.savefig(save_path / ('Sim' + str(simulation_count) + 'Adv' + str(siege.get_advantage())))
+
+    print('Most likely point for winning at', siege.get_advantage(), 'advantage:', f'{win_probs[win_prob_counts.index(max(win_prob_counts))]:.2f}%')
